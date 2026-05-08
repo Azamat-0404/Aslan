@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=yes">
+  <title>тихие признания • cinematic confession</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js">
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #fce4ec;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+      color: #4a2c3e;
+      letter-spacing: 0.02em;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      cursor: none;
+    }
+
+    .cursor {
+      position: fixed;
+      width: 22px;
+      height: 22px;
+      border: 1.5px solid rgba(180, 120, 140, 0.8);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: difference;
+      backdrop-filter: blur(3px);
+      transition: transform 0.2s ease, width 0.2s, height 0.2s;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .cursor {
+        display: block;
+      }
+      body {
+        cursor: none;
+      }
+      a,
+      button,
+      .interactive {
+        cursor: none;
+      }
+    }
+
+    html.lenis,
+    html.lenis body {
+      height: auto;
+    }
+
+    .lenis.lenis-smooth {
+      scroll-behavior: auto;
+    }
+
+    .lenis.lenis-smooth [data-lenis-prevent] {
+      overscroll-behavior: contain;
+    }
+
+    .film-grain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.06;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.9"/></svg>');
+    }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: linear-gradient(160deg, #fce4ec 0%, #f8bbd0 30%, #f48fb1 60%, #fce4ec 100%);
+      backdrop-filter: blur(2px);
+      overflow: hidden;
+      scroll-snap-align: start;
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><g fill="%23f8bbd0" opacity="0.3"><circle cx="150" cy="200" r="40"/><circle cx="650" cy="150" r="30"/><circle cx="400" cy="600" r="50"/><circle cx="100" cy="700" r="25"/><circle cx="700" cy="650" r="35"/><circle cx="300" cy="100" r="45"/><path d="M200 500 Q250 450 300 500 Q350 550 400 500" stroke="%23f48fb1" fill="none" stroke-width="2"/><path d="M500 300 Q550 250 600 300 Q650 350 700 300" stroke="%23f48fb1" fill="none" stroke-width="2"/></g></svg>');
+      background-size: cover;
+      background-position: center;
+      pointer-events: none;
+      z-index: 0;
+      animation: floatFlowers 20s infinite alternate ease-in-out;
+    }
+
+    @keyframes floatFlowers {
+      0% {
+        transform: scale(1) translateY(0);
+      }
+      100% {
+        transform: scale(1.05) translateY(-10px);
+      }
+    }
+
+    .hidden-reveal {
+      opacity: 0;
+      transform: translateY(25px);
+      filter: blur(6px);
+      transition: all 1.2s cubic-bezier(0.2, 0.9, 0.1, 1);
+    }
+
+    .visible-reveal {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+
+    .glass-panel {
+      background: rgba(255, 235, 240, 0.45);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 220, 230, 0.6);
+      border-radius: 2.5rem;
+      box-shadow: 0 20px 40px rgba(180, 100, 130, 0.25), inset 0 0 30px rgba(255, 255, 255, 0.4);
+      padding: 2rem 2.2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1,
+    h2,
+    p {
+      font-weight: 300;
+    }
+
+    .ambient-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 1100;
+      background: rgba(255, 235, 240, 0.7);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(200, 150, 170, 0.5);
+      color: #6b3a50;
+      padding: 0.7rem 1.4rem;
+      border-radius: 3rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      transition: 0.3s;
+      box-shadow: 0 4px 20px rgba(180, 130, 150, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+
+    .ambient-btn:hover {
+      border-color: rgba(200, 120, 150, 0.8);
+      color: #4a2030;
+      background: rgba(255, 245, 248, 0.9);
+    }
+
+    .intro-text {
+      font-size: clamp(2.2rem, 7vw, 5rem);
+      font-weight: 300;
+      text-align: center;
+      line-height: 1.2;
+      text-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.03em;
+      max-width: 900px;
+      color: #4a2c3e;
+    }
+
+    .memories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      align-items: start;
+      position: relative;
+      z-index: 1;
+    }
+
+    .memory-card {
+      aspect-ratio: 3/4;
+      background: rgba(255, 220, 230, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 2rem;
+      overflow: hidden;
+      box-shadow: 0 15px 30px rgba(180, 130, 150, 0.3);
+      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      filter: brightness(0.9) contrast(1.05);
+      transform: rotate(0.5deg) scale(0.98);
+      opacity: 0.9;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .memory-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s ease;
+    }
+
+    .memory-card:nth-child(odd) {
+      transform: rotate(-0.8deg);
+    }
+
+    .memory-card:nth-child(even) {
+      transform: rotate(0.7deg);
+    }
+
+    .memory-card:hover {
+      transform: scale(1.05) rotate(0deg);
+      filter: brightness(1.1) blur(0);
+      opacity: 1;
+      z-index: 5;
+      box-shadow: 0 25px 45px rgba(200, 140, 160, 0.5);
+      border-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .memory-card:hover img {
+      transform: scale(1.08);
+    }
+
+    .drive-scene {
+      width: 100%;
+      height: 60vh;
+      background: linear-gradient(180deg, #f8bbd0 0%, #f48fb1 40%, #ec407a 100%);
+      position: relative;
+      overflow: hidden;
+      border-radius: 3rem;
+      margin: 2rem 0;
+      z-index: 1;
+      box-shadow: 0 20px 40px rgba(180, 100, 140, 0.3);
+    }
+
+    .confession-line {
+      font-size: clamp(2rem, 6vw, 4.2rem);
+      font-weight: 300;
+      text-align: center;
+      letter-spacing: 0.05em;
+      color: #4a2035;
+    }
+
+    .flower-particle {
+      position: absolute;
+      pointer-events: none;
+      z-index: 2;
+      font-size: 1.5rem;
+      opacity: 0.6;
+      animation: floatUp 8s infinite ease-in;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.7;
+      }
+      50% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateY(-120px) rotate(30deg);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .glass-panel {
+        padding: 1.5rem;
+      }
+      .memories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+      }
+      .memory-card {
+        border-radius: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <div class="film-grain"></div>
+
+  <button class="ambient-btn" id="audioToggle">🌸 звук • выкл</button>
+
+  <main id="smooth-wrapper">
+    <!-- СТРАНИЦА 1: ИНТРО -->
+    <section class="page" id="intro">
+      <div class="glass-panel">
+        <p class="intro-text hidden-reveal" style="transition-delay: 0.2s;">Некоторые чувства молчат слишком долго...</p>
+        <p class="intro-text hidden-reveal" style="margin-top: 2rem; font-size: clamp(1.6rem, 5vw, 3rem); transition-delay: 1s;">Но я не хочу, чтобы мои исчезли.</p>
+      </div>
+      <div style="position: absolute; bottom: 3rem; font-size: 0.9rem; opacity: 0.5; z-index: 1; color: #6b3a50;">листай медленно ✿</div>
+    </section>
+
+    <!-- СТРАНИЦА 2: ГАЛЕРЕЯ ВОСПОМИНАНИЙ -->
+    <section class="page" id="memories">
+      <h2 class="hidden-reveal" style="font-weight: 300; margin-bottom: 2rem; font-size: 2rem; z-index: 1; color: #4a2c3e;">разбросанные лепестки</h2>
+      <div class="memories-grid" id="galleryContainer">
+        <!-- Фото 1 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 1">
+        </div>
+        <!-- Фото 2 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 2">
+        </div>
+        <!-- Фото 3 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 3">
+        </div>
+        <!-- Фото 4 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 4">
+        </div>
+        <!-- Фото 5 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 5">
+        </div>
+        <!-- Фото 6 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 6">
+        </div>
+        <!-- Фото 7 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 7">
+        </div>
+        <!-- Фото 8 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 8">
+        </div>
+        <!-- Фото 9 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 9">
+        </div>
+        <!-- Фото 10 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 10">
+        </div>
+        <!-- Фото 11 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 11">
+        </div>
+        <!-- Фото 12 -->
+        <div class="memory-card">
+          <img src="" alt="воспоминание 12">
+        </div>
+      </div>
+    </section>
+
+    <!-- СТРАНИЦА 3: ЧУВСТВА -->
+    <section class="page" id="feelings">
+      <div class="glass-panel" style="max-width: 700px; text-align: left;">
+        <p class="hidden-reveal" style="font-size: 1.8rem; margin-bottom: 2rem;">Я пыталась не замечать.</p>
+        <p class="hidden-reveal" style="font-size: 1.8rem; margin-bottom: 2rem;">Но каждое воспоминание вело к тебе.</p>
+        <p class="hidden-reveal" style="font-size: 1.8rem; margin-bottom: 2rem;">Ты стал частью моей тишины.</p>
+        <p class="hidden-reveal" style="font-size: 2rem; margin-top: 3rem;">И почему-то...<br>самым тёплым воспоминанием.</p>
+      </div>
+    </section>
+
+    <!-- СТРАНИЦА 4: НОЧНАЯ ДОРОГА -->
+    <section class="page" id="drive">
+      <div class="drive-scene" id="driveVisual">
+        <div style="position: absolute; bottom: 3rem; left: 2rem; z-index: 2; font-size: 1.4rem; opacity: 0.8; color: #fff; text-shadow: 0 0 20px rgba(200,100,140,0.6);">
+          мечтать о тебе в розовых сумерках ✿
+        </div>
+      </div>
+    </section>
+
+    <!-- СТРАНИЦА 5: ФИНАЛЬНОЕ ПРИЗНАНИЕ -->
+    <section class="page" id="confession">
+      <div class="glass-panel" style="text-align: center;">
+        <p class="hidden-reveal confession-line">Я не знаю, когда это случилось.</p>
+        <p class="hidden-reveal confession-line" style="margin-top: 2rem;">Но где-то между всеми этими мгновениями...</p>
+        <p class="hidden-reveal confession-line" style="margin-top: 2.5rem; font-weight: 400;">я влюбилась в тебя.</p>
+        <p class="hidden-reveal" style="margin-top: 4rem; font-size: 2rem;">И мне нужно было, чтобы ты знал.</p>
+      </div>
+    </section>
+
+    <!-- СТРАНИЦА 6: КОНЦОВКА -->
+    <section class="page" id="ending" style="background: linear-gradient(160deg, #fce4ec 0%, #f8bbd0 100%);">
+      <p class="hidden-reveal" style="font-size: 2.5rem; font-weight: 300; opacity: 0.9; color: #4a2c3e;">Спасибо, что ты есть в моей жизни.</p>
+      <div style="margin-top: 3rem; opacity: 0.5; font-size: 1rem; color: #6b3a50;">✿ лепестки тихо падают ✿</div>
+    </section>
+  </main>
+
+  <script>
+    (function() {
+      gsap.registerPlugin(ScrollTrigger);
+
+      const lenis = new Lenis({
+        duration: 1.8,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+      });
+
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+
+      const cursor = document.getElementById('cursor');
+      if (cursor && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        document.addEventListener('mousemove', (e) => {
+          cursor.style.left = e.clientX + 'px';
+          cursor.style.top = e.clientY + 'px';
+        });
+        document.addEventListener('mouseenter', () => cursor.style.opacity = '1');
+        document.addEventListener('mouseleave', () => cursor.style.opacity = '0');
+      }
+
+      let rainAudio;
+      try {
+        rainAudio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+      } catch (e) {}
+      const audioBtn = document.getElementById('audioToggle');
+      let audioPlaying = false;
+
+      function toggleRain() {
+        if (!rainAudio) return;
+        if (audioPlaying) {
+          rainAudio.pause();
+          audioPlaying = false;
+          audioBtn.innerHTML = '🌸 звук • выкл';
+        } else {
+          rainAudio.play().catch(() => {});
+          audioPlaying = true;
+          audioBtn.innerHTML = '🌸 звук • вкл';
+        }
+      }
+      if (audioBtn) audioBtn.addEventListener('click', toggleRain);
+
+      // reveal animations
+      const revealElements = document.querySelectorAll('.hidden-reveal');
+      revealElements.forEach(el => {
+        gsap.fromTo(el, {
+          opacity: 0,
+          y: 40,
+          filter: 'blur(10px)'
+        }, {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            end: 'top 40%',
+            scrub: 0.6,
+            toggleActions: 'play none none reverse',
+          },
+          duration: 1.4,
+          ease: 'power2.out'
+        });
+      });
+
+      // drive scene parallax
+      const driveScene = document.getElementById('driveVisual');
+      if (driveScene) {
+        gsap.to(driveScene, {
+          backgroundPosition: '50% 80%',
+          scrollTrigger: {
+            trigger: driveScene,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+          },
+          ease: 'none'
+        });
+      }
+
+      // intro zoom
+      gsap.to('#intro .glass-panel', {
+        scale: 1.03,
+        scrollTrigger: {
+          trigger: '#intro',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 0.8,
+        }
+      });
+
+      // gallery cards depth effect
+      gsap.utils.toArray('.memory-card').forEach((card, i) => {
+        gsap.fromTo(card, {
+          scale: 0.9,
+          rotate: i % 2 === 0 ? -1 : 1,
+          filter: 'blur(4px)'
+        }, {
+          scale: 1,
+          rotate: 0,
+          filter: 'blur(0px)',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 95%',
+            end: 'top 40%',
+            scrub: 0.9,
+          }
+        });
+      });
+
+      // floating flower petals
+      const petals = ['🌸', '✿', '❀', '🌷', '✾', '💮'];
+      const particleContainer = document.createElement('div');
+      particleContainer.style.position = 'fixed';
+      particleContainer.style.top = '0';
+      particleContainer.style.left = '0';
+      particleContainer.style.width = '100%';
+      particleContainer.style.height = '100%';
+      particleContainer.style.pointerEvents = 'none';
+      particleContainer.style.zIndex = '999';
+      document.body.appendChild(particleContainer);
+
+      for (let i = 0; i < 25; i++) {
+        const petal = document.createElement('div');
+        petal.className = 'flower-particle';
+        petal.textContent = petals[Math.floor(Math.random() * petals.length)];
+        petal.style.left = Math.random() * 100 + '%';
+        petal.style.top = Math.random() * 100 + '%';
+        petal.style.animationDuration = (6 + Math.random() * 10) + 's';
+        petal.style.animationDelay = Math.random() * 8 + 's';
+        petal.style.fontSize = (0.8 + Math.random() * 2) + 'rem';
+        particleContainer.appendChild(petal);
+      }
+
+      window.addEventListener('load', () => {
+        lenis.scrollTo(0, {
+          immediate: true
+        });
+        ScrollTrigger.refresh();
+      });
+    })();
+  </script>
+</body>
+</html>
